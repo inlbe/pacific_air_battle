@@ -196,7 +196,7 @@ class World
 			spatial.position[0] += spatial.speed[0] * deltaTimeSec;
 			spatial.position[2] += spatial.speed[1] * deltaTimeSec;
 			this.calcWorldPos(spatial);
-			spatial.rotation += spatial.angularVelocity * deltaTimeSec;
+			spatial.yRotation += spatial.yAngularVelocity * deltaTimeSec;
 			spatial.zRotation += spatial.zAngularVelocity * deltaTimeSec;
 			this.calcMatrix(spatial);
 			
@@ -410,7 +410,7 @@ class World
 				spatial.position[1],
 				spatial.position[2]);
 			spatial.matrix = this.m4.zRotate(spatial.matrix, spatial.zRotation);
-			spatial.matrix = this.m4.yRotate(spatial.matrix, spatial.rotation);
+			spatial.matrix = this.m4.yRotate(spatial.matrix, spatial.yRotation);
 		}
 		else
 		{
@@ -420,7 +420,7 @@ class World
 				spatial.worldPosition[1],
 				spatial.worldPosition[2]);    
 			spatial.matrix = this.m4.zRotate(spatial.matrix, spatial.zRotation);
-			spatial.matrix = this.m4.yRotate(spatial.matrix, spatial.rotation);
+			spatial.matrix = this.m4.yRotate(spatial.matrix, spatial.yRotation);
 		}
 	}
 	calcRenderSpatialsRecursively(parent = this, children = [])
@@ -607,10 +607,9 @@ class Spatial
 		this.worldPosition = [0, 0, 0];
 		this.visible = true;
 		this.children = [];
-		//this.renderSearchIndex = 0;
-		this.rotation = 0; //only able to rotate on y axis for simplicity
+		this.yRotation = 0;
 		this.zRotation = 0;
-		this.angularVelocity = 0;
+		this.yAngularVelocity = 0;
 		this.zAngularVelocity = 0;
 		this.matrix = [];
 		this.speed = [0, 0];
@@ -626,7 +625,7 @@ class Spatial
 		this.position = [0,0,0]
 		this.speed = [0,0]
 		this.zRotation = 0;
-		this.rotation = 0;
+		this.yRotation = 0;
 		this.health = 1;
 	}
 	poolSet(objectArgs)

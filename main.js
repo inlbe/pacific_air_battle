@@ -40,11 +40,16 @@ class MyWorld extends World
 
         this.keyBinds = 
 		{
-			fire: "Space",
-			forward: "KeyW",
-			backward: "KeyS",
-			left: "KeyA",
-			right: "KeyD",
+			fire1: "Space",
+			forward1: "KeyW",
+			backward1: "KeyS",
+			left1: "KeyA",
+			right1: "KeyD",
+            fire2: "KeyF",
+			forward2: "ArrowUp",
+			backward2: "ArrowDown",
+			left2: "ArrowLeft",
+			right2: "ArrowRight",
 		};
 
         let keyBindsArray = Object.values(this.keyBinds);
@@ -670,7 +675,7 @@ class Vehicle extends Spatial
             }
         }
         this.lastMaxHeight = maxHeight;
-        this.shadow.rotation = this.rotation;
+        this.shadow.yRotation = this.yRotation;
     }
     poolReset()
     {
@@ -722,7 +727,7 @@ class Vehicle extends Spatial
         this.world.addCollisionSpatial(bullet);
         bullet.speed[0] = Math.cos(angle) * this.bulletSpeed;
         bullet.speed[1] = Math.sin(angle) * this.bulletSpeed;
-        bullet.rotation = -angle;
+        bullet.yRotation = -angle;
         bullet.onCollide.addListener((collideBullet, spatialHit) =>
         {
             this.bulletPool.free(collideBullet);
@@ -857,7 +862,6 @@ class EnemyVehicle extends Vehicle
         let count = 0
         for(let i = 0; i < 8; i++)
         {
-            console.log(count);
             this.fireBullet(i * ang);
             count ++;
         }
@@ -1238,23 +1242,23 @@ class HellCat extends Vehicle
 		let setKeyStates = (code, value) =>
 		{
 			let keyBinds = this.world.keyBinds;
-			if(keyBinds.right ===  code)
+			if(keyBinds.right1 == code || keyBinds.right2 == code)
 			{
 				this.keyStates.right = value;
 			}
-			if(keyBinds.left === code)
+			if(keyBinds.left1 == code || keyBinds.left2 == code)
 			{
 				this.keyStates.left = value;
 			}
-			if(keyBinds.forward === code)
+			if(keyBinds.forward1 === code || keyBinds.forward2 == code)
 			{
 				this.keyStates.forward = value;
 			}
-			if(keyBinds.backward === code)
+			if(keyBinds.backward1 === code || keyBinds.backward2 == code)
 			{
 				this.keyStates.backward = value;
 			}
-			if(keyBinds.fire === code)
+			if(keyBinds.fire1 === code || keyBinds.fire2 == code)
 			{
 				this.keyStates.fire = value;
 			}
@@ -1378,7 +1382,7 @@ class PowerUp extends Spatial
         let py3d = MyWorld.Altitude.DogFight;
         this.position  = this.world.screenToIsoCoord(px2d, py2d, py3d);
         this.zAngularVelocity = Math.PI;
-        this.angularVelocity = Math.PI;
+        this.yAngularVelocity = Math.PI;
         this.collisionGroup |= HellCat.CollisionID;
     }
     get activeAbility()
@@ -1760,7 +1764,7 @@ class AbstractBezierCurveEnemyWave extends AbstractEnemyWave
             let coords = this.world.screenToIsoCoord(pos[0], pos[1], MyWorld.Altitude.DogFight);
             if(this.alignWithCurve)
             {
-                vehicle.rotation = Math.atan2(-(coords[2] - vehicle.position[2]), coords[0] - vehicle.position[0]) - Math.PI / 2;
+                vehicle.yRotation = Math.atan2(-(coords[2] - vehicle.position[2]), coords[0] - vehicle.position[0]) - Math.PI / 2;
             }
             vehicle.position = [coords[0], coords[1], coords[2]];
         }
@@ -1912,7 +1916,7 @@ class StraightLineEnemyWave extends AbstractEnemyWave
     addNewVehicle(pos)
     {
         let vehicle = super.addNewVehicle(pos);
-        vehicle.rotation = this.vehicleRotation;
+        vehicle.yRotation = this.vehicleRotation;
         vehicle.speed[1] = this.zeroSpeed;
         return vehicle;
     }
