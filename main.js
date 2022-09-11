@@ -29,7 +29,7 @@ class MyWorld extends World
         return(
             {
                 Explosion: [2.42,,749,.03,.19,.52,4,2.71,,.6,,,,1.2,,1,.37,.48,.09],
-                Shoot: [,,478,.01,.07,.01,4,1.29,-5,.3,,,,,93,.3,,.92,.08,.01],
+                Shoot: [0.5,,490,,.05,.08,4,1.14,-7,,,,,.4,,.2,,.5,.09,.01],
                 Hit: [1.04,,365,,.01,.11,2,2.76,-4.2,4.6,,,,1.9,.3,.1,,.95,.01],
                 PowerUp: [1.36,,441,.02,.12,.3,1,1.75,-7,3.9,434,.19,.1,,,,.01,.85,.14]
             })
@@ -1199,7 +1199,7 @@ class HellCat extends Vehicle
         }    
         if(this.keyStates.fire && this.canFire)
 		{
-            zzfx(MyWorld.SoundFX.Shoot);
+            zzfx(...MyWorld.SoundFX.Shoot);
             let fireAng = Math.PI / 2;
             let fireDouble = () =>
             {

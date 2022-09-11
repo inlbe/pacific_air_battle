@@ -30,8 +30,44 @@ class World
 				this.events.onKeyUp(event);
 			}
 		});
-		let vertexShaderSource = `attribute vec4 p;attribute vec3 n;uniform mat4 a;uniform mat4 b;varying vec3 c;void main(){gl_Position=a*p;c=mat3(b)*n;}`;
-		let fragmentShaderSource = `precision mediump float;varying vec3 c;uniform vec4 e;void main(){vec3 f=normalize(c);float l=abs(f.x)*0.9+abs(f.y)+abs(f.z)*0.75;gl_FragColor=e;gl_FragColor.rgb*=l;}`;
+		let vertexShaderSource = 
+		`attribute vec4 aVertexPosition;
+		attribute vec3 aVertexNormal;
+		
+		uniform mat4 uProjectionMatrix;
+		uniform mat4 uNormalMatrix;
+		
+		varying vec3 aVertexColor;
+
+		varying highp vec3 vLighting;
+
+		void main()
+		{
+			gl_Position=uProjectionMatrix * aVertexPosition;
+
+			// Apply lighting effect
+
+			highp vec3 ambientLight = vec3(0.4, 0.4, 0.4);
+			highp vec3 directionalLightColor = vec3(1, 1, 1);
+			highp vec3 directionalVector = normalize(vec3(0.85, 1, 0.75));
+
+			highp vec4 transformedNormal = uNormalMatrix * vec4(aVertexNormal, 1.0);
+			highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);
+			vLighting = ambientLight + (directionalLightColor * directional);
+
+			aVertexColor=mat3(uNormalMatrix)* aVertexNormal;
+		}`;
+		let fragmentShaderSource = 
+		`precision mediump float;
+		varying highp vec3 vLighting;
+		varying vec3 aVertexColor;
+		uniform vec4 e;
+		void main()
+		{
+			vec3 f=normalize(aVertexColor);
+			gl_FragColor=e;
+			gl_FragColor.rgb *= vLighting;
+		}`;
 
 		this.glCanvas = document.getElementById('glcanvas');
 		this.canvas = document.getElementById("canvas");
@@ -44,23 +80,20 @@ class World
 		this.webglUtils = new WebGLUtils(this.gl);
 		this.m4 = new M4();
 		this.program = this.webglUtils.createProgramFromSources([vertexShaderSource, fragmentShaderSource]);
+		
 		this.hudItems = [];
 		// Tell WebGL how to convert from clip space to pixels
 
 		// look up where the vertex data needs to go.
-		this.positionLocation = this.gl.getAttribLocation(this.program, "p");
-		this.normalLocation = this.gl.getAttribLocation(this.program, "n");
+		this.positionLocation = this.gl.getAttribLocation(this.program, "aVertexPosition");
+		this.normalLocation = this.gl.getAttribLocation(this.program, "aVertexNormal");
 
 		// lookup uniforms
-		this.worldViewProjectionLocation = this.gl.getUniformLocation(this.program, "a");
-		this.worldInverseTransposeLocation = this.gl.getUniformLocation(this.program, "b");
+		this.worldViewProjectionLocation = this.gl.getUniformLocation(this.program, "uProjectionMatrix");
+		this.worldInverseTransposeLocation = this.gl.getUniformLocation(this.program, "uNormalMatrix");
 		this.colorLocation = this.gl.getUniformLocation(this.program, "e");
-
 		this.zMin = 0;
 		this.zMax = 50;
-		this.zMaxSq = this.zMax * this.zMax;
-
-	
 		this.timers = [];
 		this.children = [] //children spatials
 		this.renderSpatials = [];
