@@ -36,7 +36,7 @@ class World
 		this.glCanvas = document.getElementById('glcanvas');
 		this.canvas = document.getElementById("canvas");
 		this.ctx = this.canvas.getContext("2d");
-		this.glCanvas.style.background = "black"
+		this.glCanvas.style.background = "#00bfff";
 		this.ctx.font = "32px Comic Sans MS";
 		this.ctx.fillStyle = "red";
 		this.ctx.textAlign = "left";
@@ -64,14 +64,14 @@ class World
 		this.timers = [];
 		this.children = [] //children spatials
 		this.renderSpatials = [];
-		let aspect = this.gl.canvas.width / this.gl.canvas.height;
+		this.aspect = this.gl.canvas.width / this.gl.canvas.height;
 		this.fieldOfView = Math.PI / 3;
-		let projSize = 10
-		let a = projSize * aspect
-		this.xScreen = projSize * aspect * 2;
-		this.yScreen = projSize * 2;
-		this.projectionMatrix = this.m4.orthographic(-projSize * aspect, projSize * aspect, -projSize, projSize, this.zMin, this.zMax)
-		this.camTargetDis = Math.pow(2, 32);
+		this.projSize = 10
+		this.xScreen = this.projSize * this.aspect * 2;
+		this.yScreen = this.projSize * 2;
+		
+		this.projectionMatrix = this.orthographicProjection();
+		
 		this.camera = new Camera(this, [0, 0, 0], [0, 0, 0]);
 
 		// Turn on the position attribute
@@ -121,6 +121,14 @@ class World
 		this.requestID = requestAnimationFrame(this.render.bind(this));
 		this.calcRenderSpatialsFlag = false;
 		this.collisionSpatials= []; //array of spatials that will be tested for collisions every frame
+	}
+	perspectiveProjection()
+	{
+		return this.m4.perspective(this.fieldOfView, this.aspect, 0.1, 999);
+	}
+	orthographicProjection()
+	{
+		return this.m4.orthographic(-this.projSize * this.aspect, this.projSize * this.aspect, -this.projSize, this.projSize, this.zMin, this.zMax)
 	}
 	render(time)
 	{
@@ -626,7 +634,7 @@ class Camera
 		this.cameraMatrix = this.world.m4.lookAt(this.position, this.target, this.up);
 		this.viewMatrix = this.world.m4.inverse(this.cameraMatrix);
 	}
-	setProperties(position = this.position, target = this.target, up = this.up)
+	setProperties(position = this.position, target = this.target, up = this.up, orthographic = true)
 	{
 		this.target = target;
 		this.position = position;

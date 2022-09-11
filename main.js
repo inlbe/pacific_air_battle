@@ -4,16 +4,16 @@ class MyWorld extends World
 	{
         return( 
             {
-                DarkBlue: 0x305981,
-                Red: 0xff4f69,
-                White: 0xfff7f8,
-                Orange: 0xea7d2a,
-                Yellow: 0xffda45,
-                Blue: 0x68aed4,
-                Green: 0x8bd155,
-                DarkGreen: 0x237350,
-                Black: 0x000000,
-                Grey: 0x76808c
+                DarkBlue: World.HextoRGB(0x305981),
+                Red: World.HextoRGB(0xff4f69),
+                White: World.HextoRGB(0xfff7f8),
+                Orange: World.HextoRGB(0xea7d2a),
+                Yellow: World.HextoRGB(0xffda45),
+                Blue: World.HextoRGB(0x68aed4),
+                Green: World.HextoRGB(0x8bd155),
+                DarkGreen: World.HextoRGB(0x237350),
+                Black: World.HextoRGB(0x000000),
+                Grey: World.HextoRGB(0x76808c)
             })
 	}
     static get Altitude()
@@ -63,13 +63,21 @@ class MyWorld extends World
         {
             if(titleGroup.visible)
             {
+                this.camera.position = [20, 20, 20];
+
+                this.camera.target = [0, 0, 0];
+                this.camera.setProperties();
+                this.projectionMatrix = this.orthographicProjection();
+
                 titleGroup.setVisible(false);
                 this.gameGroup.setVisible(true);
                 this.gameGroup.newLevel();
             }
         });
 
-        this.camera.position = [20, 20, 20];
+        this.projectionMatrix = this.perspectiveProjection();
+
+        this.camera.position = [15, 10, -100];
 
         this.camera.target = [0, 0, 0];
         this.camera.setProperties();
@@ -101,32 +109,77 @@ class MyWorld extends World
     {
         return(
         [
-            [0.1875, 0, 0, 0.375, 1.1, 0.5, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.1875, 0, -0.625, 0.375, 1, 0.75, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.1875, 0, -1.375, 0.375, 1, 0.75, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.1875, -0.1, -1.9375, 0.375, 0.9, 0.375, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.16875, 0, -2.25, 0.3375, 0.8, 0.25, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.15, 0, -2.5, 0.3, 0.7, 0.25, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.16875, -0.05, 0.5, 0.3375, 1, 0.5, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.15, -0.0875, 1, 0.3, 0.825, 0.5, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.13125, -0.125, 1.5, 0.2625, 0.65, 0.5, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.1125, -0.1625, 2, 0.225, 0.5, 0.5, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.09375, -0.1375, 2.75, 0.1875, 0.425, 1, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.15, 0.5125, -0.875, 0.3, 0.125, 0.25, 0].concat(World.HextoRGB(MyWorld.Palette.Black)),
-            [0.15, 0.575, -0.5, 0.3, 0.25, 0.5, 0].concat(World.HextoRGB(MyWorld.Palette.Black)),
-            [0.675, -0.35, -0.65, 0.6, 0.1, 1.8, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [1.275, -0.35, -0.7, 0.6, 0.1, 1.5, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [1.875, -0.35, -0.75, 0.6, 0.1, 1.2, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [2.475, -0.35, -0.8, 0.6, 0.1, 0.9, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [3.075, -0.35, -0.85, 0.6, 0.1, 0.6, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.375, 0.025, 2.375, 0.375, 0.1, 0.25, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.5625, 0.025, 2.625, 0.75, 0.1, 0.25, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.6875, 0.025, 3, 1, 0.1, 0.5, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.025, 0.575, 3, 0.05, 1, 0.5, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.025, 0.45, 2.625, 0.05, 0.75, 0.25, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0.025, 0.2625, 2.375, 0.05, 0.375, 0.25, 0].concat(World.HextoRGB(MyWorld.Palette.DarkBlue)),
-            [0, 0, -2.725, 0.2, 2, 0.2, 1].concat(World.HextoRGB(MyWorld.Palette.Black)),
+            [0.1875, 0, 0, 0.375, 1.1, 0.5, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.1875, 0, -0.625, 0.375, 1, 0.75, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.1875, 0, -1.375, 0.375, 1, 0.75, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.1875, -0.1, -1.9375, 0.375, 0.9, 0.375, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.16875, 0, -2.25, 0.3375, 0.8, 0.25, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.15, 0, -2.5, 0.3, 0.7, 0.25, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.16875, -0.05, 0.5, 0.3375, 1, 0.5, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.15, -0.0875, 1, 0.3, 0.825, 0.5, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.13125, -0.125, 1.5, 0.2625, 0.65, 0.5, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.1125, -0.1625, 2, 0.225, 0.5, 0.5, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.09375, -0.1375, 2.75, 0.1875, 0.425, 1, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.15, 0.5125, -0.875, 0.3, 0.125, 0.25, 0].concat(MyWorld.Palette.Black),
+            [0.15, 0.575, -0.5, 0.3, 0.25, 0.5, 0].concat(MyWorld.Palette.Black),
+            [0.675, -0.35, -0.65, 0.6, 0.1, 1.8, 0].concat(MyWorld.Palette.DarkBlue),
+            [1.275, -0.35, -0.7, 0.6, 0.1, 1.5, 0].concat(MyWorld.Palette.DarkBlue),
+            [1.875, -0.35, -0.75, 0.6, 0.1, 1.2, 0].concat(MyWorld.Palette.DarkBlue),
+            [2.475, -0.35, -0.8, 0.6, 0.1, 0.9, 0].concat(MyWorld.Palette.DarkBlue),
+            [3.075, -0.35, -0.85, 0.6, 0.1, 0.6, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.375, 0.025, 2.375, 0.375, 0.1, 0.25, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.5625, 0.025, 2.625, 0.75, 0.1, 0.25, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.6875, 0.025, 3, 1, 0.1, 0.5, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.025, 0.575, 3, 0.05, 1, 0.5, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.025, 0.45, 2.625, 0.05, 0.75, 0.25, 0].concat(MyWorld.Palette.DarkBlue),
+            [0.025, 0.2625, 2.375, 0.05, 0.375, 0.25, 0].concat(MyWorld.Palette.DarkBlue),
+            [0, 0, -2.725, 0.2, 2, 0.2, 1].concat(MyWorld.Palette.Black),
         ]);
+    }
+    bettyCubeDatas()
+    {
+        let mainColor = MyWorld.Palette.DarkGreen
+        return(
+            [
+                [0,0,0, 1,1,1, 1].concat(mainColor),
+                [0,0,-1, 1,1,1, 1].concat(mainColor),
+                [0,0.05,-2, 0.8,0.9,1, 1].concat(mainColor),
+                [0,0.05,-2.75, 0.6,0.7,0.5, 1].concat(mainColor),
+                [0,0.05,-3.125, 0.4,0.5,0.25, 1].concat(MyWorld.Palette.Black),
+                [0,0.05,-3.3125, 0.2,0.3,0.125, 1].concat(MyWorld.Palette.Black),
+                [0,0.05,1.5, 0.8,0.9,2, 1].concat(mainColor),
+                [0,0.125,2.75, 0.6,0.85,0.5, 1].concat(mainColor),
+                [0,0.125,3.25, 0.4,0.65,0.5, 1].concat(mainColor),
+                [0,0.125,3.625, 0.2,0.45,0.25, 1].concat(MyWorld.Palette.Black),
+                [0,0.575,-2.35, 0.6,0.15,0.2, 1].concat(MyWorld.Palette.Black),
+                [0,0.65,-1.5, 0.6,0.3,1.5, 1].concat(MyWorld.Palette.Black),
+                [0,0.575,0.875, 0.6,0.15,3.25, 1].concat(mainColor),
+                [0,0.8,2.125, 0.1,0.3,0.25, 1].concat(mainColor),
+                [0,0.95,2.375, 0.1,0.6,0.25, 1].concat(mainColor),
+                [0,1.05,2.625, 0.1,1,0.25, 1].concat(mainColor),
+                [0,1.1,2.875, 0.1,1.1,0.25, 1].concat(mainColor),
+                [0,0.9,3.125, 0.1,0.9,0.25, 1].concat(mainColor),
+                [0,0.75,3.375, 0.1,0.6,0.25, 1].concat(mainColor),
+                [0.75,0,-0.6, 0.5,0.1,1.8, 0].concat(mainColor),
+                [1.25,0,-0.6, 0.5,0.1,1.6, 0].concat(mainColor),
+                [1.75,0,-0.6, 0.5,0.1,1.4, 0].concat(mainColor),
+                [2.25,0,-0.6, 0.5,0.1,1.2, 0].concat(mainColor),
+                [2.75,0,-0.6, 0.5,0.1,1, 0].concat(mainColor),
+                [3.25,0,-0.6, 0.5,0.1,0.8, 0].concat(mainColor),
+                [3.75,0,-0.6, 0.5,0.1,0.6, 0].concat(mainColor),
+                [4.25,0,-0.6, 0.5,0.1,0.4, 0].concat(mainColor),
+                [4.625,0,-0.6, 0.25,0.1,0.2, 0].concat(mainColor),
+                [1.25,0,-0.25, 0.3,0.3,0.5, 0].concat(mainColor),
+                [1.25,0,-0.75, 0.4,0.4,0.5, 0].concat(mainColor),
+                [1.25,0,-1.5, 0.5,0.5,1, 0].concat(mainColor),
+                [1.25,0,-2.125, 0.4,0.4,0.25, 0].concat(mainColor),
+                [0.6,0.4,2.625, 0.6,0.1,0.25, 0].concat(mainColor),
+                [0.8,0.4,2.875, 1,0.1,0.25, 0].concat(mainColor),
+                [0.9,0.4,3.125, 1.4,0.1,0.25, 0].concat(mainColor),
+                [0.8,0.4,3.375, 1.2,0.1,0.25, 0].concat(mainColor),
+                [1.25, 0, -2.35, 0.1, 1.1, 0.1, 1].concat(MyWorld.Palette.Black),
+                [-1.25, 0, -2.35, 0.1, 1.1, 0.1, 1].concat(MyWorld.Palette.Black)
+            ]);
     }
 }
 
@@ -135,11 +188,34 @@ class TitleGroup extends Spatial
     constructor(world)
     {
         super(world);
+        let initAircraft = () =>
+        {
+            displayHellCat.position = [0, 0, 150];
+            displayBetty.position = [0, 0, 0];
+        }
         let displayHellCat = new Spatial(world);
-        let cubes = VehicleBuilder.BuildVehicle(world, world.hellcatCubeDatas(), 4);
-        world.addChildren(cubes, displayHellCat);
+        let hellCatCubes = VehicleBuilder.BuildVehicle(world, world.hellcatCubeDatas(), 4);
+        world.startPropellors(1, hellCatCubes);
+        world.addChildren(hellCatCubes, displayHellCat);
         world.addChild(displayHellCat, this);
+        displayHellCat.speed[1] = -30;
+
+        let displayBetty = new Spatial(world);
+        let bettyCubes = VehicleBuilder.BuildVehicle(world, world.bettyCubeDatas(), 4);
+        world.addChildren(bettyCubes, displayBetty);
+        world.addChild(displayBetty, this);
+        displayBetty.speed[1] = -20;
+        world.startPropellors(2, bettyCubes);
+
         world.hudItems[0] = "Click to Start";
+        initAircraft();
+        this.update = (deltaTimeSec) =>
+        {
+            if(displayHellCat.position[2] < -120)
+            {
+                initAircraft();
+            }
+        } 
     }
 }
 
@@ -170,12 +246,12 @@ class GameGroup extends Spatial
         this.scorePerPowerUp = 500;
         this.lastPowerUpScore = 0;
         this.readyForPowerUp = false;
-        this.takingOffTimer = new Timer(world, 5);
+        this.takingOffTimer = new Timer(world, 4);
         this.takingOffTimer.onComplete = () =>
         {
             this.player.checkKeyInput = true;
         }
-        this.carrierVisibleTimer = new Timer(world, 10);
+        this.carrierVisibleTimer = new Timer(world, 8);
         this.carrierVisibleTimer.onComplete = () =>
         {
             this.carrier.setVisible(false);
@@ -278,7 +354,7 @@ class Terrain extends Spatial
 {
     static get Speed()
     {
-        return 4;
+        return 5;
     }
     constructor(world)
     {
@@ -289,7 +365,7 @@ class Terrain extends Spatial
         this.terrainSpeed = Terrain.Speed;
         this.totalTerrainChunks = 2;
         this.onTerrainChunkPassed = new Signal();
-        let sea = new Cube(world.gl, [100, 1, 100], World.HextoRGB(MyWorld.Palette.Blue))
+        let sea = new Cube(world.gl, [100, 1, 100], MyWorld.Palette.Blue)
         let seaBlock = new Spatial(world, [0, -0.5, 0], sea)
         world.addChild(seaBlock, this);
         for(let i = 0; i < this.totalTerrainChunks; i++)
@@ -429,7 +505,7 @@ class TerrainBlock extends Spatial
 {
     constructor(world, position, height)
     {
-        super(world, position, new Cube(world.gl, [1, height, 1], World.HextoRGB(MyWorld.Palette.Green)));
+        super(world, position, new Cube(world.gl, [1, height, 1], MyWorld.Palette.Green));
     }
     poolSet(objectArgs)
     {
@@ -447,7 +523,7 @@ class Vehicle extends Spatial
         this._vehicleScale = 0;
         let cubeDatas = this._makeCubeDatas();
         this.structures = VehicleBuilder.BuildVehicle(world, cubeDatas, this.vehicleScale);
-        this.hitColor = World.HextoRGB(MyWorld.Palette.Red);
+        this.hitColor = MyWorld.Palette.Red;
         this.ogColors = [];
         this.fireRateDelta = 0.2
 
@@ -495,7 +571,7 @@ class Vehicle extends Spatial
     }
     get mainColor()
     {
-        return World.HextoRGB(MyWorld.Palette.White);
+        return MyWorld.Palette.White;
     }
     addCollideListener()
     {
@@ -794,7 +870,7 @@ class EnemyShip extends EnemyVehicle
     }
     get mainColor()
     {
-        return World.HextoRGB(MyWorld.Palette.Grey);
+        return MyWorld.Palette.Grey;
     }
     _makeCubeDatas()
     {
@@ -810,7 +886,7 @@ class EnemyShip extends EnemyVehicle
             [0, 5.75, 5.5,   1, 0.5, 1,   1].concat(this.mainColor),
             [0, 3, 2,   2, 1, 4,   1].concat(this.mainColor),
             [0, 4.25, 2,   1, 1.5, 1,   1].concat(this.mainColor),
-            [0, 5.25, 2,   1, 0.5, 1,   1].concat(World.HextoRGB(MyWorld.Palette.Black)),
+            [0, 5.25, 2,   1, 0.5, 1,   1].concat(MyWorld.Palette.Black),
             [0, 3, -4,   1.5, 1, 3,   1].concat(this.mainColor),
             [0, 4, -4,   1, 1, 1,   1].concat(this.mainColor),
             [0, 4, -5,   0.3, 0.3, 1,   1].concat(this.mainColor),
@@ -846,7 +922,7 @@ class Zero extends EnemyPlane
     }
     get mainColor()
     {
-        return World.HextoRGB(MyWorld.Palette.White)
+        return MyWorld.Palette.White
     }
 
     get vehicleScale()
@@ -859,10 +935,10 @@ class Zero extends EnemyPlane
         [
             [0, 0, 0, 1, 1, 1, 1].concat(this.mainColor),
             [0, 0, -1.5, 1, 1, 2, 1].concat(this.mainColor),
-            [0, 0.575, -1.4, 0.5, 0.15, 0.2, 1].concat(World.HextoRGB(MyWorld.Palette.Black)),
-            [0, 0.65, -0.6, 0.5, 0.3, 1.4, 1].concat(World.HextoRGB(MyWorld.Palette.Black)),
-            [0, 0.6, 0.2, 0.5, 0.2, 0.2, 1].concat(World.HextoRGB(MyWorld.Palette.Black)),
-            [0, 0.55, 0.4, 0.5, 0.1, 0.2, 1].concat(World.HextoRGB(MyWorld.Palette.Black)),
+            [0, 0.575, -1.4, 0.5, 0.15, 0.2, 1].concat(MyWorld.Palette.Black),
+            [0, 0.65, -0.6, 0.5, 0.3, 1.4, 1].concat(MyWorld.Palette.Black),
+            [0, 0.6, 0.2, 0.5, 0.2, 0.2, 1].concat(MyWorld.Palette.Black),
+            [0, 0.55, 0.4, 0.5, 0.1, 0.2, 1].concat(MyWorld.Palette.Black),
             [0, -0.05, 0.875, 0.8, 0.9, 0.75, 1].concat(this.mainColor),
             [0, -0.1, 1.625, 0.6, 0.6, 0.75, 1].concat(this.mainColor),
             [0, -0.15, 2.375, 0.4, 0.7, 0.75, 1].concat(this.mainColor),
@@ -875,14 +951,14 @@ class Zero extends EnemyPlane
             [0.55, 0.15, 3.25, 0.3, 0.1, 0.7, 0].concat(this.mainColor),
             [0.85, 0.15, 3.3, 0.3, 0.1, 0.5, 0].concat(this.mainColor),
             [1.15, 0.15, 3.325, 0.3, 0.1, 0.25, 0].concat(this.mainColor),
-            [0, 0, -3.2, 0.3, 3, 0.2, 1].concat(World.HextoRGB(MyWorld.Palette.Black))
+            [0, 0, -3.2, 0.3, 3, 0.2, 1].concat(MyWorld.Palette.Black)
         ]));
     }
     _wingCowlCubeDatas()
     {
         return(
         [
-            [0, 0, -2.75, 0.9, 0.9, 0.5, 1].concat(World.HextoRGB(MyWorld.Palette.Black)),
+            [0, 0, -2.75, 0.9, 0.9, 0.5, 1].concat(MyWorld.Palette.Black),
             [1.5, -0.45, -0.7, 0.75, 0.1, 2.05, 0].concat(this.mainColor),
             [2.25, -0.45, -0.725, 0.75, 0.1, 1.9, 0].concat(this.mainColor),
             [3, -0.45, -0.75, 0.75, 0.1, 1.7, 0].concat(this.mainColor),
@@ -904,7 +980,7 @@ class Kate extends Zero
     {
         return(
         [
-            [0, 0, -2.75, 1.2, 1.2, 0.5, 1].concat(World.HextoRGB(MyWorld.Palette.Black)),
+            [0, 0, -2.75, 1.2, 1.2, 0.5, 1].concat(MyWorld.Palette.Black),
             [1.5, -0.45, -0.75375, 0.75, 0.1, 2.07, 0].concat(this.mainColor),
             [2.25, -0.45, -0.825, 0.75, 0.1, 1.85, 0].concat(this.mainColor),
             [3, -0.45, -0.9125, 0.75, 0.1, 1.62, 0].concat(this.mainColor),
@@ -915,7 +991,7 @@ class Kate extends Zero
     }
     get mainColor()
     {
-        return World.HextoRGB(MyWorld.Palette.DarkGreen);
+        return MyWorld.Palette.DarkGreen;
     }
 }
 
@@ -940,10 +1016,6 @@ class Betty extends EnemyPlane
     {
         return 0.75;
     }
-    get mainColor()
-    {
-        return World.HextoRGB(MyWorld.Palette.DarkGreen);
-    }
     poolReset()
     {
         super.poolReset();
@@ -951,47 +1023,7 @@ class Betty extends EnemyPlane
     }
     _makeCubeDatas()
     {
-        return(
-        [
-            [0,0,0, 1,1,1, 1].concat(this.mainColor),
-            [0,0,-1, 1,1,1, 1].concat(World.HextoRGB(MyWorld.Palette.DarkGreen)),
-            [0,0.05,-2, 0.8,0.9,1, 1].concat(this.mainColor),
-            [0,0.05,-2.75, 0.6,0.7,0.5, 1].concat(this.mainColor),
-            [0,0.05,-3.125, 0.4,0.5,0.25, 1].concat(World.HextoRGB(MyWorld.Palette.Black)),
-            [0,0.05,-3.3125, 0.2,0.3,0.125, 1].concat(World.HextoRGB(MyWorld.Palette.Black)),
-            [0,0.05,1.5, 0.8,0.9,2, 1].concat(this.mainColor),
-            [0,0.125,2.75, 0.6,0.85,0.5, 1].concat(this.mainColor),
-            [0,0.125,3.25, 0.4,0.65,0.5, 1].concat(this.mainColor),
-            [0,0.125,3.625, 0.2,0.45,0.25, 1].concat(World.HextoRGB(MyWorld.Palette.Black)),
-            [0,0.575,-2.35, 0.6,0.15,0.2, 1].concat(World.HextoRGB(MyWorld.Palette.Black)),
-            [0,0.65,-1.5, 0.6,0.3,1.5, 1].concat(World.HextoRGB(MyWorld.Palette.Black)),
-            [0,0.575,0.875, 0.6,0.15,3.25, 1].concat(this.mainColor),
-            [0,0.8,2.125, 0.1,0.3,0.25, 1].concat(this.mainColor),
-            [0,0.95,2.375, 0.1,0.6,0.25, 1].concat(this.mainColor),
-            [0,1.05,2.625, 0.1,1,0.25, 1].concat(this.mainColor),
-            [0,1.1,2.875, 0.1,1.1,0.25, 1].concat(this.mainColor),
-            [0,0.9,3.125, 0.1,0.9,0.25, 1].concat(this.mainColor),
-            [0,0.75,3.375, 0.1,0.6,0.25, 1].concat(this.mainColor),
-            [0.75,0,-0.6, 0.5,0.1,1.8, 0].concat(this.mainColor),
-            [1.25,0,-0.6, 0.5,0.1,1.6, 0].concat(this.mainColor),
-            [1.75,0,-0.6, 0.5,0.1,1.4, 0].concat(this.mainColor),
-            [2.25,0,-0.6, 0.5,0.1,1.2, 0].concat(this.mainColor),
-            [2.75,0,-0.6, 0.5,0.1,1, 0].concat(this.mainColor),
-            [3.25,0,-0.6, 0.5,0.1,0.8, 0].concat(this.mainColor),
-            [3.75,0,-0.6, 0.5,0.1,0.6, 0].concat(this.mainColor),
-            [4.25,0,-0.6, 0.5,0.1,0.4, 0].concat(this.mainColor),
-            [4.625,0,-0.6, 0.25,0.1,0.2, 0].concat(this.mainColor),
-            [1.25,0,-0.25, 0.3,0.3,0.5, 0].concat(this.mainColor),
-            [1.25,0,-0.75, 0.4,0.4,0.5, 0].concat(this.mainColor),
-            [1.25,0,-1.5, 0.5,0.5,1, 0].concat(this.mainColor),
-            [1.25,0,-2.125, 0.4,0.4,0.25, 0].concat(this.mainColor),
-            [0.6,0.4,2.625, 0.6,0.1,0.25, 0].concat(this.mainColor),
-            [0.8,0.4,2.875, 1,0.1,0.25, 0].concat(this.mainColor),
-            [0.9,0.4,3.125, 1.4,0.1,0.25, 0].concat(this.mainColor),
-            [0.8,0.4,3.375, 1.2,0.1,0.25, 0].concat(this.mainColor),
-            [1.25, 0, -2.35, 0.1, 1.1, 0.1, 1].concat(World.HextoRGB(MyWorld.Palette.Black)),
-            [-1.25, 0, -2.35, 0.1, 1.1, 0.1, 1].concat(World.HextoRGB(MyWorld.Palette.Black))
-        ]);
+        return this.world.bettyCubeDatas();
     }
 }
 
@@ -1026,7 +1058,7 @@ class HellCat extends Vehicle
 			fire: false,
 		}
         this.initInput();
-        this.moveSpeed = 5;
+        this.moveSpeed = 7;
         this.maxX2d = world.xScreen / 2;
         this.minX2d = -this.maxX2d;
         this.maxY2d = world.yScreen / 2;
@@ -1069,7 +1101,7 @@ class HellCat extends Vehicle
     }
     get fireTime()
     {
-        return 0.5;
+        return 0.3;
     }
     _makeCubeDatas()
     {
@@ -1289,7 +1321,7 @@ class Carrier extends Vehicle
     }
     get mainColor()
     {
-        return World.HextoRGB(MyWorld.Palette.Grey);
+        return MyWorld.Palette.Grey;
     }
     _makeCubeDatas()
     {
@@ -1301,7 +1333,7 @@ class Carrier extends Vehicle
             [1.625, 2.875, 0,   0.75, 0.75, 4,   1].concat(this.mainColor),
             [1.625, 3.625, 0,   0.75, 0.75, 3,   1].concat(this.mainColor),
             [1.625, 4.25, 0.5,   0.75, 0.5, 0.75,   1].concat(this.mainColor),
-            [1.625, 4.625, 0.5,   0.75, 0.25, 0.75,   1].concat(World.HextoRGB(MyWorld.Palette.Black))
+            [1.625, 4.625, 0.5,   0.75, 0.25, 0.75,   1].concat(MyWorld.Palette.Black)
         ]);
     }
     get vehicleScale()
@@ -1395,20 +1427,20 @@ class PowerUp extends Spatial
         let spatialGroups = []
         let healthSpatialDatas =
         [
-            [0, 0, 0,    2, 2, 0.5, 1].concat(World.HextoRGB(MyWorld.Palette.Red)),
-            [0, 0, 0,    0.5, 1.5, 1, 1].concat(World.HextoRGB(MyWorld.Palette.White)),
-            [0, 0, 0,    1.5, 0.5, 1, 1].concat(World.HextoRGB(MyWorld.Palette.White))
+            [0, 0, 0,    2, 2, 0.5, 1].concat(MyWorld.Palette.Red),
+            [0, 0, 0,    0.5, 1.5, 1, 1].concat(MyWorld.Palette.White),
+            [0, 0, 0,    1.5, 0.5, 1, 1].concat(MyWorld.Palette.White)
         ]
         let doubleFireSpatialDatas = 
         [
-            [0, 0, 0,    2, 2, 0.5, 1].concat(World.HextoRGB(MyWorld.Palette.Orange)),
-            [0.3, 0, 0,    0.2, 1.5, 1, 0].concat(World.HextoRGB(MyWorld.Palette.White)),
+            [0, 0, 0,    2, 2, 0.5, 1].concat(MyWorld.Palette.Orange),
+            [0.3, 0, 0,    0.2, 1.5, 1, 0].concat(MyWorld.Palette.White),
         ]
         let quadFireSpatialDatas = 
         [
-            [0, 0, 0,    2, 2, 0.5, 1].concat(World.HextoRGB(MyWorld.Palette.Orange)),
-            [0.3, 0, 0,    0.2, 1.5, 1, 0].concat(World.HextoRGB(MyWorld.Palette.White)),
-            [0.7, 0, 0,    0.2, 1.5, 1, 0].concat(World.HextoRGB(MyWorld.Palette.White))
+            [0, 0, 0,    2, 2, 0.5, 1].concat(MyWorld.Palette.Orange),
+            [0.3, 0, 0,    0.2, 1.5, 1, 0].concat(MyWorld.Palette.White),
+            [0.7, 0, 0,    0.2, 1.5, 1, 0].concat(MyWorld.Palette.White)
         ]
         let healthSpatialGroup = new AbilitySpatial(this.world, PowerUp.Abilities.Health, VehicleBuilder.BuildVehicle(this.world, healthSpatialDatas, 0.75));
         let doubleFireSpatialGroup = new AbilitySpatial(this.world, PowerUp.Abilities.DoubleFire, VehicleBuilder.BuildVehicle(this.world, doubleFireSpatialDatas, 0.75));
@@ -1703,7 +1735,7 @@ class AbstractBezierCurveEnemyWave extends AbstractEnemyWave
     {
         super(world, position, terrain);
         this.planes = 5;
-        this.easeRate = 0.1;
+        this.easeRate = 0.125;
         this.newPlane = 0.2; //new plane at t=
         this.yoyo = false;
         this.reversing = false;
@@ -1871,7 +1903,7 @@ class StraightLineEnemyWave extends AbstractEnemyWave
     {
         super(world, position, terrain);
         this.startIsoCoord = [0,0,0];
-        this.zeroSpeed = 5;
+        this.zeroSpeed = 6;
         this.vehicleRotation = Math.PI;
     }
     addNewPlane(pos)
@@ -1888,8 +1920,6 @@ class StraightLineEnemyWave extends AbstractEnemyWave
     }
 
 }
-
-
 
 class VerticalEnemyWave extends StraightLineEnemyWave
 {
@@ -2048,7 +2078,7 @@ class PlayerBullet extends AbstractBullet
 	}
 	constructor(world, position)
 	{
-		super(world, position, World.HextoRGB(MyWorld.Palette.Red));
+		super(world, position, MyWorld.Palette.Red);
 		this.collisionGroup |= EnemyVehicle.CollisionID;
 	}
 	
@@ -2062,7 +2092,7 @@ class EnemyBullet extends AbstractBullet
 	}
 	constructor(world, position)
 	{
-		super(world, position, World.HextoRGB(MyWorld.Palette.Yellow));
+		super(world, position, MyWorld.Palette.Yellow);
 		this.damage = 1/6;
 	}
 }
@@ -2100,7 +2130,7 @@ class VehicleBuilder
     {
         let spatials = [];
         let xScales = [-1, 1]
-        let color = World.HextoRGB(MyWorld.Palette.Black)
+        let color = MyWorld.Palette.Black
         xScales.forEach((xScale) =>
         {
             datas.forEach((data) =>
