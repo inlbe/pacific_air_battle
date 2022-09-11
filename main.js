@@ -854,9 +854,12 @@ class EnemyVehicle extends Vehicle
     doShoot()
     {
         let ang = Math.PI / 4;
-        for(let i = 0; i < 7; i+= ang)
+        let count = 0
+        for(let i = 0; i < 8; i++)
         {
-            this.fireBullet(i);
+            console.log(count);
+            this.fireBullet(i * ang);
+            count ++;
         }
     }
 }
@@ -1548,14 +1551,14 @@ class AbstractEnemyWave extends Spatial
     constructor(world, position, terrain)
     {
         super(world, position);
-        this.enemyPlanePool = this._enemyPlanePool;
-        this.planes = 0;
-        this.planesCount = 0;
+        this.enemyVehiclePool = this._enemyVehiclePool;
+        this.vehicles = 0;
+        this.vehiclesCount = 0;
         this.terrain = terrain;
         this.active = false;
         this.onWaveFinished = new Signal();
         this.destroyedCount = 0;
-        this.planesLeft = 0;//planes left at each yoyo
+        this.vehiclesLeft = 0;//planes left at each yoyo
         this.maxActiveShooters = 1;
         this.onAltitudeChanged = new Signal();
         this.onEnemyStartDestroyed = new Signal();
@@ -1563,60 +1566,60 @@ class AbstractEnemyWave extends Spatial
         this.waveLevel = 0;
         this.waveInc = 0.2
     }
-    get _enemyPlanePool()
+    get _enemyVehiclePool()
     {
         return new ZeroPool();
     }
     get availableShooters()
     {
         let availableShooters = [];
-        this.children.forEach((plane) =>
+        this.children.forEach((vehicle) =>
         {
-            if(!plane.clearedToFire)
+            if(!vehicle.clearedToFire)
             {
-                availableShooters.push(plane)
+                availableShooters.push(vehicle)
             }
         });
         return availableShooters;
     }
     update(deltaTimeSec)
     {
-        this.coordinatePlanes(deltaTimeSec)
+        this.coordinateVehicles(deltaTimeSec)
     }
     start()
     {
         this.active = true;
         this.randomize();
-        this.planesLeft = this.planes - this.destroyedCount;
+        this.vehiclesLeft = this.vehicles - this.destroyedCount;
     }
     stop(sendSignal = true)
     {
-        this.enemyPlanePool.freeAll(this.children);
+        this.enemyVehiclePool.freeAll(this.children);
         this.world.removeCollisionSpatials(this.children);
         this.world.removeAllChildren(this);
         
         this.active = false;
-        this.planesCount = 0;
+        this.vehiclesCount = 0;
         this.destroyedCount = 0;
-        this.planesLeft = 0;
+        this.vehiclesLeft = 0;
         if(sendSignal)
         {
             this.onWaveFinished.dispatch(this);
         }
     }
 
-    coordinatePlanes(deltaTimeSec)
+    coordinateVehicles(deltaTimeSec)
     {
         let toRemove = [];
-        this.children.forEach((plane) =>
+        this.children.forEach((vehicle) =>
         {
             
-            this.movePlane(plane, deltaTimeSec);
-            if(this.testDone(plane))
+            this.moveVehicle(vehicle, deltaTimeSec);
+            if(this.testDone(vehicle))
             {
-                this.doDone(plane);
-                this.enemyPlanePool.free(plane);
-                toRemove.push(plane);
+                this.doDone(vehicle);
+                this.enemyVehiclePool.free(vehicle);
+                toRemove.push(vehicle);
             }
         });
         if(toRemove.length > 0)
@@ -1625,13 +1628,13 @@ class AbstractEnemyWave extends Spatial
             this.world.removeCollisionSpatials(toRemove);
             this.chooseNewShooters();
         }
-        if(this.planesCount == this.planesLeft && this.children.length == 0)
+        if(this.vehiclesCount == this.vehiclesLeft && this.children.length == 0)
         {
             this.doFinished();
         }
         else if(this.doTestAddNewPlanes())
         {
-            this.addNewPlanes(this.startPositions)
+            this.addNewVehicles(this.startPositions)
             this.chooseNewShooters()
         }
     
@@ -1639,11 +1642,11 @@ class AbstractEnemyWave extends Spatial
     chooseNewShooters()
     {
         let availableShooters = [];
-        this.children.forEach((plane) =>
+        this.children.forEach((vehicle) =>
         {
-            if(!plane.clearedToFire)
+            if(!vehicle.clearedToFire)
             {
-                availableShooters.push(plane)
+                availableShooters.push(vehicle)
             }
         });
         let currentActiveShooters = this.children.length - availableShooters.length;
@@ -1658,41 +1661,41 @@ class AbstractEnemyWave extends Spatial
         
     }
     
-    addNewPlanes(positions)
+    addNewVehicles(positions)
     {
         positions.forEach((pos) =>
         {
-           this.addNewPlane(pos); 
+           this.addNewVehicle(pos); 
         });
     }
-    addNewPlane(pos)
+    addNewVehicle(pos)
     {
-        let zero = this.enemyPlanePool.obtain({world: this.world, position: pos, terrain: this.terrain});
-        this.world.addChild(zero, this);
-        this.world.addCollisionSpatial(zero);
-        this.planesCount += 1;
-        zero.onDoneDestroyed.addListener((destroyedZero) =>
+        let vehicle = this.enemyVehiclePool.obtain({world: this.world, position: pos, terrain: this.terrain});
+        this.world.addChild(vehicle, this);
+        this.world.addCollisionSpatial(vehicle);
+        this.vehiclesCount += 1;
+        vehicle.onDoneDestroyed.addListener((destroyedZero) =>
         {
-            this.enemyPlanePool.free(destroyedZero);
+            this.enemyVehiclePool.free(destroyedZero);
             this.world.removeChild(destroyedZero);
             this.world.removeCollisionSpatial(destroyedZero);
             this.destroyedCount ++;
-            if(this.planesCount == this.planes && this.children.length == 0)
+            if(this.vehiclesCount == this.vehicles && this.children.length == 0)
             {
                 this.doFinished();
             }
             this.chooseNewShooters();
         });
-        zero.onFired.addListener((firedPlane) =>
+        vehicle.onFired.addListener((firedPlane) =>
         {
             firedPlane.clearedToFire = false;
             this.chooseNewShooters();
         });
-        zero.onStartDestroyed.addListener((startDestroyedZero) =>
+        vehicle.onStartDestroyed.addListener((startDestroyedZero) =>
         {
             this.onEnemyStartDestroyed.dispatch(startDestroyedZero);
         });
-        return zero;
+        return vehicle;
     }
     doTestAddNewPlanes(positions = [])
     {
@@ -1704,12 +1707,12 @@ class AbstractEnemyWave extends Spatial
     {
         this.stop();
     }
-    testDone(plane)
+    testDone(vehicle)
     {
         //override
         return false;
     }
-    movePlane(plane, deltaTimeSec)
+    moveVehicle(vehicle, deltaTimeSec)
     {
         //override
     }
@@ -1722,7 +1725,7 @@ class AbstractEnemyWave extends Spatial
     {
         //override
     }
-    doDone(plane)
+    doDone(vehicle)
     {
         //override
     }
@@ -1734,9 +1737,9 @@ class AbstractBezierCurveEnemyWave extends AbstractEnemyWave
     constructor(world, position, terrain)
     {
         super(world, position, terrain);
-        this.planes = 5;
+        this.vehicles = 5;
         this.easeRate = 0.125;
-        this.newPlane = 0.2; //new plane at t=
+        this.newPlane = 0.2; //new vehicle at t=
         this.yoyo = false;
         this.reversing = false;
         this.alignWithCurve = true;
@@ -1747,19 +1750,19 @@ class AbstractBezierCurveEnemyWave extends AbstractEnemyWave
     {
         return [this.bezier.pos(0)];
     }
-    movePlane(plane, deltaTimeSec)
+    moveVehicle(vehicle, deltaTimeSec)
     {
-        if(!plane.exploding)
+        if(!vehicle.exploding)
         {
             let sign = this.reversing ? -1 : 1;
-            plane.t += sign * this.easeRate * deltaTimeSec;
-            let pos = this.bezier.pos(plane.t)
+            vehicle.t += sign * this.easeRate * deltaTimeSec;
+            let pos = this.bezier.pos(vehicle.t)
             let coords = this.world.screenToIsoCoord(pos[0], pos[1], MyWorld.Altitude.DogFight);
             if(this.alignWithCurve)
             {
-                plane.rotation = Math.atan2(-(coords[2] - plane.position[2]), coords[0] - plane.position[0]) - Math.PI / 2;
+                vehicle.rotation = Math.atan2(-(coords[2] - vehicle.position[2]), coords[0] - vehicle.position[0]) - Math.PI / 2;
             }
-            plane.position = [coords[0], coords[1], coords[2]];
+            vehicle.position = [coords[0], coords[1], coords[2]];
         }
     }
     stop(sendSignal)
@@ -1770,46 +1773,46 @@ class AbstractBezierCurveEnemyWave extends AbstractEnemyWave
     }
     doTestAddNewPlanes()
     {
-        return this.children.length == 0 || (this.planesCount < this.planesLeft && ((!this.reversing && this.children[this.children.length - 1].t > this.newPlane) ||
+        return this.children.length == 0 || (this.vehiclesCount < this.vehiclesLeft && ((!this.reversing && this.children[this.children.length - 1].t > this.newPlane) ||
             (this.reversing && this.children[this.children.length - 1].t < 1 - this.newPlane)));
     }
-    testDone(plane)
+    testDone(vehicle)
     {
-        return (plane.t > 1 || plane.t < 0);
+        return (vehicle.t > 1 || vehicle.t < 0);
     }
     get _bezier()
     {
         return null;
     }
-    addNewPlane(pos)
+    addNewVehicle(pos)
     {
-        let plane = null
+        let vehicle = null
         if(this.yoyo)
         {
-            plane = super.addNewPlane(pos);
+            vehicle = super.addNewVehicle(pos);
             if(this.healths.length > 0)
             {
-                plane.health = this.healths.shift();
+                vehicle.health = this.healths.shift();
             }
             if(this.reversing)
             {
-                plane.t = 1;
+                vehicle.t = 1;
             }
         }
         else 
         {
-            plane = super.addNewPlane(pos);
+            vehicle = super.addNewVehicle(pos);
         } 
-        return plane;
+        return vehicle;
     }
     doFinished()
     {
         if(this.yoyo)
         {
             this.reversing = this.reversing ? false : true;
-            this.planesCount = 0;
-            this.planesLeft = this.planes - this.destroyedCount;
-            if(this.planesLeft == 0)
+            this.vehiclesCount = 0;
+            this.vehiclesLeft = this.vehicles - this.destroyedCount;
+            if(this.vehiclesLeft == 0)
             {
                 this.stop();
             }
@@ -1819,9 +1822,9 @@ class AbstractBezierCurveEnemyWave extends AbstractEnemyWave
             this.stop();
         }
     }
-    doDone(plane)
+    doDone(vehicle)
     {
-        this.healths.push(plane.health);
+        this.healths.push(vehicle.health);
     }
 }
 
@@ -1859,7 +1862,7 @@ class BomberWave extends AbstractBezierCurveEnemyWave
     {
         super(world, position, terrain);
         this.yoyo = true;
-        this.planes = 1;
+        this.vehicles = 1;
         this.alignWithCurve = false;
     }
     get _bezier()
@@ -1878,7 +1881,7 @@ class BettyWave extends BomberWave
         this.waveLevel = 1;
         this.waveInc = 1;
     }
-    get _enemyPlanePool()
+    get _enemyVehiclePool()
     {
         return new BettyPool();
     }
@@ -1889,9 +1892,9 @@ class KateWave extends BomberWave
     constructor(world, position, terrain)
     {
         super(world, position, terrain);
-        this.planes = 4;
+        this.vehicles = 4;
     }
-    get _enemyPlanePool()
+    get _enemyVehiclePool()
     {
         return new KatePool();
     }
@@ -1906,16 +1909,16 @@ class StraightLineEnemyWave extends AbstractEnemyWave
         this.zeroSpeed = 6;
         this.vehicleRotation = Math.PI;
     }
-    addNewPlane(pos)
+    addNewVehicle(pos)
     {
-        let zero = super.addNewPlane(pos);
-        zero.rotation = this.vehicleRotation;
-        zero.speed[1] = this.zeroSpeed;
-        return zero;
+        let vehicle = super.addNewVehicle(pos);
+        vehicle.rotation = this.vehicleRotation;
+        vehicle.speed[1] = this.zeroSpeed;
+        return vehicle;
     }
-    testDone(plane)
+    testDone(vehicle)
     {
-        let coords = this.world.isoCoordToScreen(plane.position[0], plane.position[1], plane.position[2]);
+        let coords = this.world.isoCoordToScreen(vehicle.position[0], vehicle.position[1], vehicle.position[2]);
         return (coords[0] < -this.world.xScreen / 2 || coords[1] > this.world.yScreen / 2);
     }
 
@@ -1927,7 +1930,7 @@ class VerticalEnemyWave extends StraightLineEnemyWave
     {
         super(world, position, terrain);
         this.randomize();      
-        this.planes = 5;
+        this.vehicles = 5;
         this.separation = 6
         
     }
@@ -1953,7 +1956,7 @@ class VerticalEnemyWave extends StraightLineEnemyWave
     }
     doTestAddNewPlanes()
     {
-        return this.children.length == 0 || (this.planesCount < this.planesLeft && (MathsFunctions.Dis([this.children[this.children.length - 1].position[0], this.children[this.children.length - 1].position[2]], [this.startIsoCoord[0], this.startIsoCoord[2]]) > this.separation));
+        return this.children.length == 0 || (this.vehiclesCount < this.vehiclesLeft && (MathsFunctions.Dis([this.children[this.children.length - 1].position[0], this.children[this.children.length - 1].position[2]], [this.startIsoCoord[0], this.startIsoCoord[2]]) > this.separation));
     }
 }
 
@@ -2005,7 +2008,7 @@ class ShippingEnemyWave extends VerticalEnemyWave
         super.stop(sendSignal);
         this.onAltitudeChanged.dispatch((MyWorld.Altitude.DogFight));
     }
-    get _enemyPlanePool()
+    get _enemyVehiclePool()
     {
         return new EnemyShipPool();
     }
@@ -2016,7 +2019,7 @@ class HorizontalEnemyWave extends StraightLineEnemyWave
     constructor(world, position, terrain)
     {
         super(world, position, terrain);
-        this.planes = 4;
+        this.vehicles = 4;
         this.separation = 4.5;
         this.maxXOffset = 15;
         this.randomize();
@@ -2029,7 +2032,7 @@ class HorizontalEnemyWave extends StraightLineEnemyWave
     get startPositions()
     {
         let positions = []
-        for(let i = 0; i < this.planes; i++)
+        for(let i = 0; i < this.vehicles; i++)
         {
             let pos = [...this.startIsoCoord];
             pos[0] -= i * this.separation;
@@ -2039,7 +2042,7 @@ class HorizontalEnemyWave extends StraightLineEnemyWave
     }
     doTestAddNewPlanes(positions)
     {
-        return this.children.length == 0 || this.planesCount < this.planesLeft
+        return this.children.length == 0 || this.vehiclesCount < this.vehiclesLeft
     }
 }
 
