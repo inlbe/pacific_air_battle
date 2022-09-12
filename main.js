@@ -1615,7 +1615,7 @@ class AbstractEnemyWave extends Spatial
         this.active = false;
         this.onWaveFinished = new Signal();
         this.destroyedCount = 0;
-        this.vehiclesLeft = 0;//planes left at each yoyo
+        this.vehiclesLeft = 0;//vehicles left at each yoyo
         this.maxActiveShooters = 1;
         this.onAltitudeChanged = new Signal();
         this.onEnemyStartDestroyed = new Signal();
@@ -1689,7 +1689,7 @@ class AbstractEnemyWave extends Spatial
         {
             this.doFinished();
         }
-        else if(this.doTestAddNewPlanes())
+        else if(this.doTestAddNewVehicles())
         {
             this.addNewVehicles(this.startPositions)
             this.chooseNewShooters()
@@ -1731,11 +1731,11 @@ class AbstractEnemyWave extends Spatial
         this.world.addChild(vehicle, this);
         this.world.addCollisionSpatial(vehicle);
         this.vehiclesCount += 1;
-        vehicle.onDoneDestroyed.addListener((destroyedZero) =>
+        vehicle.onDoneDestroyed.addListener((destroyedVehicle) =>
         {
-            this.enemyVehiclePool.free(destroyedZero);
-            this.world.removeChild(destroyedZero);
-            this.world.removeCollisionSpatial(destroyedZero);
+            this.enemyVehiclePool.free(destroyedVehicle);
+            this.world.removeChild(destroyedVehicle);
+            this.world.removeCollisionSpatial(destroyedVehicle);
             this.destroyedCount ++;
             if(this.vehiclesCount == this.vehicles && this.children.length == 0)
             {
@@ -1743,18 +1743,18 @@ class AbstractEnemyWave extends Spatial
             }
             this.chooseNewShooters();
         });
-        vehicle.onFired.addListener((firedPlane) =>
+        vehicle.onFired.addListener((firedVehicle) =>
         {
-            firedPlane.clearedToFire = false;
+            firedVehicle.clearedToFire = false;
             this.chooseNewShooters();
         });
-        vehicle.onStartDestroyed.addListener((startDestroyedZero) =>
+        vehicle.onStartDestroyed.addListener((startdestroyedVehicle) =>
         {
-            this.onEnemyStartDestroyed.dispatch(startDestroyedZero);
+            this.onEnemyStartDestroyed.dispatch(startdestroyedVehicle);
         });
         return vehicle;
     }
-    doTestAddNewPlanes(positions = [])
+    doTestAddNewVehicles(positions = [])
     {
         //override
         return false;
@@ -1796,7 +1796,7 @@ class AbstractBezierCurveEnemyWave extends AbstractEnemyWave
         super(world, position, terrain);
         this.vehicles = 5;
         this.easeRate = 0.125;
-        this.newPlane = 0.2; //new vehicle at t=
+        this.newVehicle = 0.2; //new vehicle at t=
         this.yoyo = false;
         this.reversing = false;
         this.alignWithCurve = true;
@@ -1828,10 +1828,10 @@ class AbstractBezierCurveEnemyWave extends AbstractEnemyWave
         this.reversing = false;
         this.healths = [];
     }
-    doTestAddNewPlanes()
+    doTestAddNewVehicles()
     {
-        return this.children.length == 0 || (this.vehiclesCount < this.vehiclesLeft && ((!this.reversing && this.children[this.children.length - 1].t > this.newPlane) ||
-            (this.reversing && this.children[this.children.length - 1].t < 1 - this.newPlane)));
+        return this.children.length == 0 || (this.vehiclesCount < this.vehiclesLeft && ((!this.reversing && this.children[this.children.length - 1].t > this.newVehicle) ||
+            (this.reversing && this.children[this.children.length - 1].t < 1 - this.newVehicle)));
     }
     testDone(vehicle)
     {
@@ -2011,7 +2011,7 @@ class VerticalEnemyWave extends StraightLineEnemyWave
     {
         return [[...this.startIsoCoord]];
     }
-    doTestAddNewPlanes()
+    doTestAddNewVehicles()
     {
         return this.children.length == 0 || (this.vehiclesCount < this.vehiclesLeft && (MathsFunctions.Dis([this.children[this.children.length - 1].position[0], this.children[this.children.length - 1].position[2]], [this.startIsoCoord[0], this.startIsoCoord[2]]) > this.separation));
     }
@@ -2049,9 +2049,9 @@ class ShippingEnemyWave extends VerticalEnemyWave
         this.waveLevel = 2;
         this.waveInc = 1;
     }
-    doTestAddNewPlanes()
+    doTestAddNewVehicles()
     {
-        return this.terrainReady && super.doTestAddNewPlanes();
+        return this.terrainReady && super.doTestAddNewVehicles();
     }
     get startPositions()
     {
@@ -2097,7 +2097,7 @@ class HorizontalEnemyWave extends StraightLineEnemyWave
         }
         return positions;
     }
-    doTestAddNewPlanes(positions)
+    doTestAddNewVehicles(positions)
     {
         return this.children.length == 0 || this.vehiclesCount < this.vehiclesLeft
     }
