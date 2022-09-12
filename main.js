@@ -1065,7 +1065,7 @@ class HellCat extends Vehicle
 			fire: false,
 		}
         this.initInput();
-        this.moveSpeed = 7;
+        this.moveSpeed = 10;
         this.maxX2d = world.xScreen / 2;
         this.minX2d = -this.maxX2d;
         this.maxY2d = world.yScreen / 2;
