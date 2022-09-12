@@ -66,30 +66,25 @@ class MyWorld extends World
 
         window.addEventListener("click", (e) =>
         {
-            if(titleGroup.visible)
+            if(titleGroup.active)
             {
                 this.camera.position = [20, 20, 20];
-
                 this.camera.target = [0, 0, 0];
                 this.camera.setProperties();
                 this.projectionMatrix = this.orthographicProjection();
-
-                titleGroup.setVisible(false);
+                titleGroup.active = false;
+                this.removeChild(titleGroup);
                 this.gameGroup.setVisible(true);
                 this.gameGroup.newLevel();
             }
         });
 
         this.projectionMatrix = this.perspectiveProjection();
-
         this.camera.position = [15, 10, -100];
-
         this.camera.target = [0, 0, 0];
         this.camera.setProperties();
-
         let titleGroup = new TitleGroup(this);
         this.addChild(titleGroup);
-
         this.gameGroup = new GameGroup(this);
         this.addChild(this.gameGroup);
         this.gameGroup.setVisible(false);
@@ -197,6 +192,16 @@ class TitleGroup extends Spatial
         {
             displayHellCat.position = [0, 0, 150];
             displayBetty.position = [0, 0, 0];
+            readyBullets = [...bullets];
+            hitBullets = 0;
+            displayHellCat.zRotation = 0;
+            displayHellCat.zAngularVelocity = 0;
+            bettyCubes.forEach((cube, index) =>
+            {
+                let a = bettyOGCubePositions[index];
+                cube.position = [...a];
+                cube.speed = [0, 0];
+            });
         }
         let displayHellCat = new Spatial(world);
         let hellCatCubes = VehicleBuilder.BuildVehicle(world, world.hellcatCubeDatas(), 4);
@@ -204,18 +209,65 @@ class TitleGroup extends Spatial
         world.addChildren(hellCatCubes, displayHellCat);
         world.addChild(displayHellCat, this);
         displayHellCat.speed[1] = -30;
-
         let displayBetty = new Spatial(world);
         let bettyCubes = VehicleBuilder.BuildVehicle(world, world.bettyCubeDatas(), 4);
         world.addChildren(bettyCubes, displayBetty);
         world.addChild(displayBetty, this);
         displayBetty.speed[1] = -20;
         world.startPropellors(2, bettyCubes);
+        let bettyOGCubePositions = [];
+        bettyCubes.forEach((cube) =>
+        {
+            bettyOGCubePositions.push([...cube.position]);
+        });
+
+        let noBullets = 6
+        let hitBullets = 0;
+        let bullets = [];
+        let readyBullets = [];
+        for(let i = 0; i < noBullets; i++)
+        {
+            let bullet = new Spatial(world, [0,0,0], new Cube(world.gl, [1.5, 1.5, 3], MyWorld.Palette.Red));
+            bullets.push(bullet);
+        }
+        readyBullets = [...bullets];
+        let playerFireTimer = new Timer(world, 0.2);
+        playerFireTimer.onComplete = () =>
+        {
+            let bullet = readyBullets.pop();
+            if(bullet)
+            {
+                bullet.speed[1] = -80;
+                bullet.position = [...displayHellCat.position];
+                world.addChild(bullet, this);
+            }
+            playerFireTimer.reset(true);
+        }
+        playerFireTimer.reset(true);
 
         world.hudItems[0] = "Click to Start";
         initAircraft();
         this.update = (deltaTimeSec) =>
         {
+            bullets.forEach((bullet) =>
+            {
+                if(bullet.position[2] < displayBetty.position[2])
+                {
+                    bullet.position = [0, 0, 0];
+                    bullet.speed = [0, 0];
+                    world.removeChild(bullet);
+                    hitBullets ++;
+                    if(hitBullets == 6)
+                    {
+                        bettyCubes.forEach((cube) =>
+                        {
+                            cube.speed[0] = MathsFunctions.RandomFloat(-50, 50);
+                            cube.speed[1] = MathsFunctions.RandomFloat(-50, 50);
+                            displayHellCat.zAngularVelocity = 1.5;
+                        })
+                    }
+                }
+            });
             if(displayHellCat.position[2] < -120)
             {
                 initAircraft();
@@ -1089,6 +1141,7 @@ class HellCat extends Vehicle
         this.onHealthChanged = new Signal();
         this.collideDamage = 0.7;
         this.checkKeyInput = false;
+        this.bulletSpeed = -15;
     }
     get targetAltitude()
     {
